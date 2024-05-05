@@ -14,7 +14,7 @@ pipeline {
                 echo 'Hey esto es python no hace falta compilar!!!'
                 echo WORKSPACE
                 bat 'dir'
-                //bat 'start java -jar C:\\unir\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir helloworld\\test\\wiremock'
+                bat 'start java -jar C:\\unir\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir helloworld\\test\\wiremock'
             }
         }
         stage('Unit') {
@@ -46,10 +46,10 @@ pipeline {
                     set PYTHONPATH=.
                     set FLASK_APP=app/api.py
                     start python -m flask run
-                    start java -jar C:\\unir\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir test\\wiremock
+                    
                     '''
                     //start java -jar C:\\unir\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir test\\wiremock
-                    //sleep 10
+                    sleep 10
                     bat'''
                     python -m pytest --junitxml=result-rest.xml helloworld\\test\\rest
                     '''
