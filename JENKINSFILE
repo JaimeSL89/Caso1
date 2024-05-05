@@ -1,0 +1,90 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Get Code') {
+            steps {
+                //obtener el comando del repositorio
+                git 'https://github.com/JaimeSL89/Caso1.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                //obtener la info del path y ver que se haya descargado bien el repositorio
+                echo 'Hey esto es python no hace falta compilar!!!'
+                echo WORKSPACE
+                bat 'dir'
+                //bat 'start java -jar C:\\unir\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir helloworld\\test\\wiremock'
+            }
+        }
+        stage('Unit') {
+            steps {
+                //ejecucion de los test unitarios
+                echo 'Ejecutando los test unitarios'
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE'){
+                    bat '''
+                        python --version
+                        cd helloworld
+                        dir
+                        set PYTHONPATH=.
+                        python -m pytest --junitxml=result-unit.xml test/unit
+                        cd ..
+                        set PYTHONPATH=.
+                    '''
+                }
+                //python -m pytest test helloworld\\test\\unit
+            }
+        }
+        stage('Rest') {
+            steps {
+                //ejecucion de los test rest
+                echo 'Ejecutando los test Rest'
+                bat '''
+                    python --version
+                    cd helloworld
+                    dir
+                    set PYTHONPATH=.
+                    set FLASK_APP=app/api.py
+                    start python -m flask run
+                    start java -jar C:\\unir\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir test\\wiremock
+                    '''
+                    //start java -jar C:\\unir\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir test\\wiremock
+                    //sleep 10
+                    bat'''
+                    python -m pytest --junitxml=result-rest.xml helloworld\\test\\rest
+                    '''
+                    //sleep 10
+                    /*bat'''
+                    cd ..
+                    set PYTHONPATH=.
+                    '''*/
+                    //start java -jar C:\\unir\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir test\\wiremock\\mappings
+                    //r = requests.get('http://localhost:9090/calc/sqrt/64', auth=('user', 'pass'))
+                    //'''
+                    /*TIMEOUT /T 10
+                    def postmanGet = new URL('https://postman-echo.com/get')
+                    def getConnection = postmanGet.openConnection()
+                    getConnection.requestMethod = 'GET'
+                    r = (getConnection.responseCode)
+                    while (r != 200) {
+                        r = (getConnection.requestMethod = 'GET')
+                    }
+                    
+                    //timeout(time: 10, unit: 'SECONDS')
+                    bat'''
+                    python -m pytest --junitxml=result-rest.xml test\\rest
+                    cd ..
+                    set PYTHONPATH=.
+                    '''*/
+                }
+                //python -m pytest test helloworld\\test\\unit
+            }
+        stage('Results') {
+            steps {
+                junit 'helloworld\\result*.xml'
+                echo 'FINISH!!!'
+            }
+               
+        }
+    }
+}
